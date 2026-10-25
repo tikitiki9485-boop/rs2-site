@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0a07">
+<title>Турнир Remaster Standoff 2</title>
+<meta name="description" content="Турнир в честь обновления Remaster Standoff 2. Призовой фонд 42 000 голды. Зеркальная сетка на 16 команд, запись онлайн.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23ffc400' stroke='%23ff6b00' stroke-width='4'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-family='Arial Black,sans-serif' font-weight='900' font-size='30' fill='%230b0a07'%3EG%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@500;700&family=Unbounded:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+/* Layout: тёмная сцена с жёлто-оранжевым свечением, одна полоса "hazard tape" как главный акцент,
+   сетка плей-офф на 12 команд со скроллом по горизонтали, модальное окно с косыми срезами. */
+:root{
+  --bg:#0b0a07; --panel:#14120c; --panel-2:#1c1910;
+  --line:#2f2a1a; --line-2:#4f4626;
+  --text:#f4efdf; --muted:#9a9378;
+  --yellow:#ffc400; --orange:#ff6b00; --ink:#0b0a07; --danger:#ff6a45;
+  --f-display:"Unbounded","Arial Black","Segoe UI",system-ui,sans-serif;
+  --f-body:"Golos Text","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --cw:208px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;background:var(--bg)}
+html.lock,html.lock body{overflow:hidden}
+body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.55 var(--f-body);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--yellow);outline-offset:3px}
+
+.wrap.wide{max-width:1680px}
+.wrap{width:100%;max-width:1320px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* ---------- сцена ---------- */
+.stage{
+  background:
+    radial-gradient(70% 60% at 88% -10%,rgba(255,107,0,.30),transparent 70%),
+    radial-gradient(50% 45% at 0% 0%,rgba(255,196,0,.11),transparent 70%),
+    linear-gradient(rgba(255,196,0,.035) 1px,transparent 1px) 0 0/48px 48px,
+    linear-gradient(90deg,rgba(255,196,0,.035) 1px,transparent 1px) 0 0/48px 48px,
+    var(--bg);
+}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:18px}
+.brand{display:flex;align-items:center;gap:10px;font:800 14px var(--f-display);letter-spacing:.14em;text-transform:uppercase}
+.brand i{width:14px;height:14px;background:var(--yellow);transform:rotate(45deg);box-shadow:0 0 14px rgba(255,196,0,.6)}
+.btn-ghost{display:inline-block;text-decoration:none;color:var(--yellow);border:1px solid var(--yellow);padding:9px 16px;font:700 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;border-radius:3px;transition:background .2s,color .2s}
+.btn-ghost:hover{background:var(--yellow);color:var(--ink)}
+
+.hero{padding-block:clamp(28px,6vw,72px) clamp(28px,5vw,52px);display:grid;gap:32px;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);align-items:end}
+@media(max-width:860px){.hero{grid-template-columns:minmax(0,1fr)}}
+h1{margin:0;font:900 clamp(2rem,8.2vw,4.6rem)/1 var(--f-display);letter-spacing:-.02em;text-transform:uppercase}
+h1 .lead{display:block;margin-bottom:16px;font:500 clamp(.68rem,2.3vw,.92rem)/1.4 var(--f-mono);letter-spacing:.22em;color:var(--yellow)}
+h1 .grad{display:block;background:linear-gradient(95deg,var(--yellow) 8%,var(--orange) 92%);-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:.06em}
+.sub{margin:20px 0 0;max-width:46ch;color:var(--muted);font-size:clamp(15px,2.4vw,18px)}
+.sub b{color:var(--text);font-weight:600}
+.cta{display:inline-flex;margin-top:24px}
+
+.prize{position:relative;padding:22px 24px 24px;background:linear-gradient(160deg,#1f1b0e,#110f08);border:1px solid var(--line-2);clip-path:polygon(0 0,calc(100% - 24px) 0,100% 24px,100% 100%,24px 100%,0 calc(100% - 24px))}
+.prize::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 80% at 100% 0%,rgba(255,196,0,.14),transparent 70%);pointer-events:none}
+.p-label{font:700 11px var(--f-mono);letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.p-row{display:flex;align-items:center;gap:16px;margin-top:10px}
+.coin{flex:none;width:clamp(48px,11vw,68px);height:auto;filter:drop-shadow(0 0 14px rgba(255,160,0,.5))}
+.p-num{font:900 clamp(2.2rem,8.5vw,3.6rem)/1 var(--f-display);color:var(--yellow);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.p-unit{margin-top:6px;font:800 clamp(.9rem,3vw,1.15rem) var(--f-display);text-transform:uppercase;letter-spacing:.14em;color:var(--orange)}
+
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin:0;padding:0;border-top:1px solid var(--line)}
+.stats div{padding:16px 12px 16px 0}
+.stats div+div{padding-left:16px;border-left:1px solid var(--line)}
+.stats dt{font:500 11px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.stats dd{margin:4px 0 0;font:800 clamp(1.3rem,4.5vw,1.8rem) var(--f-display);font-variant-numeric:tabular-nums}
+.stats dd.js-free{color:var(--yellow)}
+@media(max-width:620px){
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stats div:nth-child(3){padding-left:0;border-left:0}
+  .stats div:nth-child(n+3){border-top:1px solid var(--line)}
+}
+
+.info{background:var(--panel);border-bottom:1px solid var(--line)}
+.info-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 32px;padding-block:16px}
+.info-item{display:flex;align-items:center;gap:12px;min-width:0}
+.info-k{font:700 11px var(--f-mono);letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.info-v{color:var(--yellow);font:800 clamp(.95rem,3.4vw,1.15rem) var(--f-display);text-decoration:none;overflow-wrap:anywhere;border-bottom:2px solid var(--orange);transition:color .2s}
+.info-v:hover{color:var(--orange)}
+.cert{padding:9px 14px;border:1px solid var(--yellow);border-radius:3px;font:800 12px var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--yellow)}
+.cert svg{flex:none;width:22px;height:22px;fill:none;stroke:var(--orange);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.tape{height:12px;background:repeating-linear-gradient(-45deg,var(--yellow) 0 14px,var(--ink) 14px 28px);background-size:40px 100%;animation:tape 3s linear infinite}
+@keyframes tape{to{background-position:40px 0}}
+
+/* ---------- сетка ---------- */
+.section{padding-block:clamp(36px,6vw,72px)}
+h2{margin:0;font:800 clamp(1.5rem,4.6vw,2.4rem)/1.1 var(--f-display);text-transform:uppercase;letter-spacing:-.01em}
+.sec-sub{margin:10px 0 0;color:var(--muted);max-width:60ch}
+.legend{display:flex;flex-wrap:wrap;gap:10px 22px;margin:22px 0 18px;font:500 12px var(--f-mono);color:var(--muted);letter-spacing:.04em}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend .slot{width:24px;height:24px;font-size:13px;pointer-events:none}
+.scroll-hint{display:block;margin:0 0 10px;font:500 12px var(--f-mono);color:var(--orange);letter-spacing:.06em}
+
+.board-scroll{overflow-x:auto;padding-bottom:18px;scrollbar-color:var(--line-2) transparent;scrollbar-width:thin}
+.board{position:relative;display:flex;gap:30px;width:max-content;margin-inline:auto;padding:2px 2px 0}
+.lines{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+.lines path{fill:none;stroke:var(--line-2);stroke-width:1.5;stroke-linejoin:round}
+.col{display:flex;flex-direction:column;width:var(--cw)}
+.col.center{width:190px}
+.col-h{margin:0 0 6px;padding-bottom:10px;border-bottom:1px solid var(--line);font:700 11px var(--f-mono);letter-spacing:.2em;text-transform:uppercase;color:var(--yellow)}
+.col-body{flex:1;display:grid}
+.c4{grid-template-rows:repeat(4,1fr)}
+.c2{grid-template-rows:repeat(2,1fr)}
+.c1{grid-template-rows:1fr}
+.cm{display:flex;flex-direction:column;justify-content:center;gap:26px}
+.cm .match{align-self:stretch}
+.match{align-self:center;display:flex;flex-direction:column;gap:6px;padding-block:12px}
+.mid{font:700 10px var(--f-mono);letter-spacing:.16em;color:var(--muted)}
+
+.team{position:relative;z-index:1;display:flex;flex-direction:column;gap:10px;padding:10px 12px 12px;background:var(--panel);border:1px solid var(--line);border-radius:6px}
+.team-head{display:flex;align-items:center;gap:8px;min-width:0}
+.seed{flex:none;display:grid;place-items:center;width:22px;height:22px;background:var(--yellow);color:var(--ink);font:700 11px var(--f-mono);border-radius:3px}
+.tname{flex:1;min-width:0;margin:0;font:700 11px/1.25 var(--f-display);text-transform:uppercase;overflow-wrap:anywhere}
+.cnt{flex:none;font:500 11px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.slots{display:flex;gap:5px}
+.slot{flex:none;width:32px;height:32px;display:grid;place-items:center;padding:0;background:transparent;border:1.5px dashed rgba(255,196,0,.55);border-radius:4px;color:var(--yellow);font:700 18px/1 var(--f-mono);cursor:pointer;transition:transform .18s,background .18s,color .18s,box-shadow .18s,border-color .18s}
+.slot.free:hover,.slot.free:focus-visible{transform:translateY(-3px);background:var(--yellow);border-style:solid;border-color:var(--yellow);color:var(--ink);box-shadow:0 8px 20px rgba(255,160,0,.4)}
+.slot.sent{background:var(--orange);border:1.5px solid var(--orange);color:var(--ink);cursor:default}
+.slot.taken{background:var(--panel-2);border:1.5px solid var(--line);color:var(--muted);cursor:default}
+.ph{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;height:40px;padding:0 12px;background:var(--bg);border:1px dashed var(--line-2);border-radius:6px;color:var(--muted);font-size:12px}
+.ph b{font:700 11px var(--f-mono);color:var(--orange)}
+.champ{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 10px;background:linear-gradient(160deg,rgba(255,196,0,.14),rgba(255,107,0,.06));border:1px solid var(--yellow);border-radius:6px;text-align:center}
+.champ svg{width:44px;height:44px;fill:none;stroke:var(--yellow);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.champ span{font:800 11px var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow)}
+
+footer{padding-block:28px 40px;border-top:1px solid var(--line);color:var(--muted);font:500 12px/1.7 var(--f-mono);letter-spacing:.04em}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px}
+footer b{color:var(--yellow);font-weight:700}
+
+/* ---------- модальное окно ---------- */
+.overlay{position:fixed;inset:0;z-index:50;display:grid;place-items:center;overflow:auto;perspective:900px;padding:16px max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:rgba(5,4,2,0);transition:background .35s}
+.overlay.open{background:rgba(5,4,2,.8);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.modal-wrap{width:min(440px,100%);margin:auto;opacity:0;transform:translateY(48px) scale(.88) rotateX(14deg);transform-origin:50% 100%;filter:drop-shadow(0 0 30px rgba(255,120,0,.3));transition:transform .6s cubic-bezier(.2,1.25,.3,1),opacity .3s}
+.overlay.open .modal-wrap{opacity:1;transform:none}
+.modal{position:relative;padding:22px 24px 26px;background:linear-gradient(180deg,#191509,#0f0d08);clip-path:polygon(0 0,calc(100% - 28px) 0,100% 28px,100% 100%,28px 100%,0 calc(100% - 28px))}
+.modal::before{content:"";position:absolute;left:0;top:0;width:100%;height:4px;background:linear-gradient(90deg,var(--yellow),var(--orange));transform:scaleX(0);transform-origin:left;transition:transform .8s .2s cubic-bezier(.2,.8,.2,1)}
+.overlay.open .modal::before{transform:none}
+.m-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:22px;margin-top:6px}
+.m-eyebrow{font:700 11px var(--f-mono);letter-spacing:.2em;text-transform:uppercase;color:var(--orange)}
+.close{width:34px;height:34px;display:grid;place-items:center;background:transparent;border:1px solid var(--line-2);border-radius:3px;color:var(--text);font-size:20px;line-height:1;cursor:pointer;transition:background .2s,color .2s}
+.close:hover{background:var(--yellow);color:var(--ink)}
+.m-title{margin:10px 0 4px;font:900 clamp(1.5rem,6vw,2rem)/1.1 var(--f-display);text-transform:uppercase;color:var(--yellow);overflow-wrap:anywhere}
+.m-sub{margin:0 0 18px;color:var(--muted);font-size:14px}
+.field{margin-bottom:14px;opacity:0;transform:translateY(14px);transition:opacity .45s,transform .45s;transition-delay:calc(.2s + var(--i,0) * .07s)}
+.overlay.open .field{opacity:1;transform:none}
+label{display:block;margin-bottom:6px;font:700 11px var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+input[type=text]{width:100%;padding:13px 14px;background:#0d0b07;border:1px solid var(--line-2);border-radius:4px;font-size:16px;outline:none;transition:border-color .2s,box-shadow .2s}
+input[type=text]::placeholder{color:#5f5942}
+input[type=text]:focus{border-color:var(--yellow);box-shadow:0 0 0 3px rgba(255,196,0,.18)}
+input.bad{border-color:var(--danger)}
+.at{display:flex;align-items:stretch}
+.at span{display:grid;place-items:center;padding:0 12px;background:var(--panel-2);border:1px solid var(--line-2);border-right:0;border-radius:4px 0 0 4px;color:var(--yellow);font:700 15px var(--f-mono)}
+.at input{border-radius:0 4px 4px 0}
+.hint{margin:6px 0 0;font-size:12px;color:var(--muted)}
+.err{margin:6px 0 0;font-size:13px;color:var(--danger)}
+.err:empty{display:none}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.btn{position:relative;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px 18px;border:0;background:linear-gradient(95deg,var(--yellow),var(--orange));color:var(--ink);font:800 13px var(--f-display);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));transition:filter .2s,transform .2s}
+.btn:hover{filter:brightness(1.1)}
+.btn:active{transform:scale(.98)}
+.btn[disabled]{cursor:progress;filter:saturate(.6) brightness(.85)}
+.spin{display:none;width:16px;height:16px;border:2px solid rgba(11,10,7,.35);border-top-color:var(--ink);border-radius:50%;animation:spin .7s linear infinite}
+.btn[disabled] .spin{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.done{text-align:center;padding:14px 0 4px}
+.ok{width:92px;height:92px;fill:none;stroke:var(--yellow);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.ok circle{stroke-dasharray:214;stroke-dashoffset:214;animation:draw .7s .1s ease-out forwards}
+.ok path{stroke:var(--orange);stroke-dasharray:60;stroke-dashoffset:60;animation:draw .45s .7s ease-out forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.done h3{margin:12px 0 8px;font:900 1.5rem/1.15 var(--f-display);text-transform:uppercase;color:var(--yellow)}
+.done p{margin:0 0 20px;color:var(--muted);font-size:15px}
+.done .demo{margin:-8px 0 20px;padding:10px 12px;border:1px dashed var(--orange);color:var(--orange);font:500 12px/1.5 var(--f-mono);text-align:left}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand"><i></i>Axelbolt</div>
+      <a class="btn-ghost" href="#bracket">Записаться</a>
+    </div>
+
+    <header class="hero">
+      <div>
+        <h1>
+          <span class="lead">Турнир в честь обновления</span>
+          <span class="grad">Remaster</span>
+          <span class="grad">Standoff 2</span>
+        </h1>
+        <p class="sub">Зеркальная сетка на <b>16 команд</b>. Выберите команду, нажмите на свободное место и оставьте заявку. Администратор напишет вам в Telegram.</p>
+        <a class="btn-ghost cta" href="#bracket">К сетке</a>
+      </div>
+
+      <aside class="prize" aria-label="Призовой фонд">
+        <div class="p-label">Призовой фонд</div>
+        <div class="p-row">
+          <svg class="coin" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#ffc400" stroke="#ff6b00" stroke-width="4"/><circle cx="32" cy="32" r="21" fill="none" stroke="#0b0a07" stroke-opacity=".35" stroke-width="2"/><text x="32" y="42" text-anchor="middle" font-family="Unbounded,Arial Black,sans-serif" font-weight="900" font-size="28" fill="#0b0a07">G</text></svg>
+          <div class="p-num" id="prizeNum">42 000</div>
+        </div>
+        <div class="p-unit">голды</div>
+      </aside>
+    </header>
+
+    <dl class="stats">
+      <div><dt>Команд</dt><dd id="sTeams">12</dd></div>
+      <div><dt>Мест в команде</dt><dd id="sPer">5</dd></div>
+      <div><dt>Всего мест</dt><dd id="sTotal">60</dd></div>
+      <div><dt>Свободно</dt><dd class="js-free">60</dd></div>
+    </dl>
+  </div>
+</div>
+
+<div class="tape" aria-hidden="true"></div>
+
+<section class="info" aria-label="Организатор и сертификация">
+  <div class="wrap info-row">
+    <div class="info-item"><span class="info-k">Организатор</span><a class="info-v" href="https://t.me/adm1nistratorSO2" target="_blank" rel="noopener">@adm1nistratorSO2</a></div>
+    <div class="info-item cert"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10v-6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg><span>Турнир сертифицирован</span></div>
+  </div>
+</section>
+
+<main>
+  <section class="section" id="bracket">
+    <div class="wrap wide">
+      <h2>Турнирная сетка</h2>
+      <p class="sec-sub">Две половины сетки сходятся в финале в центре. Пары первого раунда идут по порядку списка. Нажмите на свободное место, чтобы подать заявку.</p>
+
+      <div class="legend" aria-label="Обозначения">
+        <span><button class="slot" type="button" tabindex="-1" aria-hidden="true">+</button>свободное место</span>
+        <span><button class="slot sent" type="button" tabindex="-1" aria-hidden="true">✓</button>ваша заявка отправлена</span>
+        <span><button class="slot taken" type="button" tabindex="-1" aria-hidden="true">•</button>место занято</span>
+      </div>
+
+      <p class="scroll-hint" hidden>Сетка шире экрана, листайте её вбок ↔</p>
+      <div class="board-scroll"><div class="board" id="board"></div></div>
+      <noscript><p class="sec-sub">Для записи нужен включённый JavaScript.</p></noscript>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Remaster Standoff 2 · организатор <b>@adm1nistratorSO2</b> · турнир сертифицирован</span>
+    <span>Призовой фонд <b>42 000 голды</b></span>
+  </div>
+</footer>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="modal-wrap">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTeam">
+      <div class="m-top">
+        <div class="m-eyebrow">Заявка · место <span id="mSlot">1</span></div>
+        <button class="close" id="closeBtn" type="button" aria-label="Закрыть">×</button>
+      </div>
+      <h3 class="m-title" id="mTeam">TSK</h3>
+      <p class="m-sub">Заполните данные игрока. Заявка уйдёт администратору турнира.</p>
+
+      <form id="form" novalidate autocomplete="off">
+        <div class="field" style="--i:0">
+          <label for="nick">Игровой ник</label>
+          <input id="nick" type="text" maxlength="24" placeholder="Например, NightFox" autocomplete="off">
+          <p class="err" id="e-nick" role="alert"></p>
+        </div>
+        <div class="field" style="--i:1">
+          <label for="gid">Игровой ID</label>
+          <input id="gid" type="text" inputmode="numeric" maxlength="12" placeholder="12345678" autocomplete="off">
+          <p class="hint">Только цифры. ID виден в вашем профиле в игре.</p>
+          <p class="err" id="e-gid" role="alert"></p>
+        </div>
+        <div class="field" style="--i:2">
+          <label for="tg">Telegram</label>
+          <div class="at"><span>@</span><input id="tg" type="text" maxlength="40" placeholder="username" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+          <p class="err" id="e-tg" role="alert"></p>
+        </div>
+        <input class="hp" id="hp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <p class="err" id="formErr" role="alert"></p>
+        <div class="field" style="--i:3">
+          <button class="btn" id="submit" type="submit"><span class="spin" aria-hidden="true"></span><span>Отправить заявку</span></button>
+        </div>
+      </form>
+
+      <div class="done" id="done" hidden>
+        <svg class="ok" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="34"/><path d="M25 41l11 11 20-23"/></svg>
+        <h3>Заявка отправлена</h3>
+        <p id="doneTxt"></p>
+        <p class="demo" id="demoNote" hidden>Демо-режим: заявка никуда не ушла. Укажите адрес воркера в SUBMIT_URL в начале скрипта, чтобы заявки приходили в Telegram.</p>
+        <button class="btn" id="doneBtn" type="button"><span>Закрыть</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ================= НАСТРОЙКИ ================= */
+  var CONFIG = {
+    // Адрес Cloudflare Worker из файла worker.js, например "https://rs2-signup.name.workers.dev"
+    SUBMIT_URL: "/api/send",
+    // ПРОСТОЙ СПОСОБ (без воркера): впишите токен бота и числовой ID администратора.
+    // Токен будет виден в коде сайта, поэтому при желании позже перейдите на воркер.
+    BOT_TOKEN: "",
+    ADMIN_CHAT_ID: "",
+    // Сколько игроков в команде
+    SLOTS_PER_TEAM: 5,
+    // Дополнительно занятые места: { "TSK": [2, 3] }
+    TAKEN: {}
+  };
+
+  // 16 команд. Порядок списка задаёт пары первого раунда: 1-2, 3-4, ... 15-16.
+  // filled: сколько мест уже занято (по порядку, с первого).
+  // Две последние команды пока заглушки, замените названия.
+  var TEAMS = [
+    { name: "TSK", filled: 4 },
+    { name: "Avis Flop", filled: 5 },
+    { name: "Dark Star", filled: 5 },
+    { name: "Yaske Team", filled: 5 },
+    { name: "Jovix Team", filled: 5 },
+    { name: "Rippers 7", filled: 5 },
+    { name: "TJK", filled: 5 },
+    { name: "Zekyua Squad", filled: 5 },
+    { name: "Squad-Onyx", filled: 5 },
+    { name: "Immortal Squad", filled: 5 },
+    { name: "Gox Team", filled: 5 },
+    { name: "Hatyy Sqw", filled: 5 },
+    { name: "BXT", filled: 5 },
+    { name: "WO Team", filled: 5 },
+    { name: "TBA 15", filled: 5 },
+    { name: "TBA 16", filled: 5 }
+  ];
+
+  /* ================= СЕТКА ================= */
+  var S = CONFIG.SLOTS_PER_TEAM;
+  var TOTAL = TEAMS.length * S;
+  var KEY = "rs2-sent-v1";
+  var sent = new Set();
+  try { sent = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch (e) {}
+  function saveSent() { try { localStorage.setItem(KEY, JSON.stringify(Array.from(sent))); } catch (e) {} }
+
+  function $(s, r) { return (r || document).querySelector(s); }
+  var board = $("#board");
+
+  function takenOf(ti) {
+    var arr = (CONFIG.TAKEN[TEAMS[ti].name] || []).slice();
+    for (var n = 1; n <= TEAMS[ti].filled; n++) arr.push(n);
+    return arr;
+  }
+  function stateOf(ti, n) {
+    if (takenOf(ti).indexOf(n) !== -1) return "taken";
+    if (sent.has(ti + ":" + n)) return "sent";
+    return "free";
+  }
+  function busyCount(ti) {
+    var c = 0;
+    for (var n = 1; n <= S; n++) if (stateOf(ti, n) !== "free") c++;
+    return c;
+  }
+  function freeTotal() {
+    var f = 0;
+    for (var t = 0; t < TEAMS.length; t++) f += S - busyCount(t);
+    return f;
+  }
+
+  function slotBtn(ti, n) {
+    var st = stateOf(ti, n);
+    var nm = TEAMS[ti].name;
+    var label = "Команда " + nm + ", место " + n + ": " +
+      (st === "free" ? "свободно, подать заявку" : st === "sent" ? "ваша заявка отправлена" : "занято");
+    var ch = st === "free" ? "+" : st === "sent" ? "✓" : "•";
+    return '<button type="button" class="slot ' + st + '" data-t="' + ti + '" data-n="' + n + '"' +
+      (st !== "free" ? " disabled" : "") + ' aria-label="' + label + '" title="' + label + '">' + ch + "</button>";
+  }
+
+  function teamCard(seed) {
+    var ti = seed - 1, t = TEAMS[ti], slots = "";
+    for (var n = 1; n <= S; n++) slots += slotBtn(ti, n);
+    return '<article class="team' + '">' +
+      '<header class="team-head"><span class="seed">' + seed + '</span><h5 class="tname">' + t.name + "</h5>" +
+      '<span class="cnt">' + busyCount(ti) + "/" + S + "</span></header>" +
+      '<div class="slots">' + slots + "</div></article>";
+  }
+  function ph(from) { return '<div class="ph" data-from="' + from + '"><span>Победитель</span><b>' + from + "</b></div>"; }
+  function match(id, a, b) { return '<div class="match" data-match="' + id + '"><span class="mid">' + id + "</span>" + a + b + "</div>"; }
+  function col(title, cls, items, extra) {
+    return '<section class="col' + (extra || "") + '"><h4 class="col-h">' + title + '</h4><div class="col-body ' + cls + '">' + items.join("") + "</div></section>";
+  }
+
+  function render() {
+    function r16(m, a, b) { return match("M" + m, teamCard(a), teamCard(b)); }
+    var left16 = [r16(1, 1, 2), r16(2, 3, 4), r16(3, 5, 6), r16(4, 7, 8)];
+    var right16 = [r16(5, 9, 10), r16(6, 11, 12), r16(7, 13, 14), r16(8, 15, 16)];
+    var leftQF = [match("M9", ph("M1"), ph("M2")), match("M10", ph("M3"), ph("M4"))];
+    var rightQF = [match("M11", ph("M5"), ph("M6")), match("M12", ph("M7"), ph("M8"))];
+    var leftSF = [match("M13", ph("M9"), ph("M10"))];
+    var rightSF = [match("M14", ph("M11"), ph("M12"))];
+    var champ = '<div class="champ" data-from="M15">' +
+      '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M20 10h24v14a12 12 0 0 1-24 0z"/><path d="M20 14h-8v4a8 8 0 0 0 8 8"/><path d="M44 14h8v4a8 8 0 0 1-8 8"/><path d="M32 36v10"/><path d="M26 46h12v8H26z"/><path d="M22 54h20"/></svg>' +
+      "<span>Чемпион</span></div>";
+    var fin = match("M15", ph("M13"), ph("M14"));
+    board.innerHTML = '<svg class="lines" id="lines" aria-hidden="true"></svg>' +
+      col("1/8 финала", "c4", left16) +
+      col("Четвертьфинал", "c2", leftQF) +
+      col("Полуфинал", "c1", leftSF) +
+      col("Финал", "cm", [champ, fin], " center") +
+      col("Полуфинал", "c1", rightSF) +
+      col("Четвертьфинал", "c2", rightQF) +
+      col("1/8 финала", "c4", right16);
+    updateCounts();
+    drawLines();
+  }
+
+  function updateCounts() {
+    var f = freeTotal();
+    Array.prototype.forEach.call(document.querySelectorAll(".js-free"), function (el) { el.textContent = f; });
+    $("#sTeams").textContent = TEAMS.length;
+    $("#sPer").textContent = S;
+    $("#sTotal").textContent = TOTAL;
+  }
+
+  function drawLines() {
+    var svg = $("#lines");
+    if (!svg) return;
+    var sc = $(".board-scroll"), hint = $(".scroll-hint");
+    if (sc && hint) hint.hidden = sc.scrollWidth <= sc.clientWidth + 2;
+    var br = board.getBoundingClientRect();
+    var w = board.scrollWidth, h = board.scrollHeight;
+    svg.setAttribute("width", w);
+    svg.setAttribute("height", h);
+    svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+    var d = "";
+    Array.prototype.forEach.call(board.querySelectorAll("[data-from]"), function (t) {
+      var s = board.querySelector('[data-match="' + t.getAttribute("data-from") + '"]');
+      if (!s) return;
+      var a = s.getBoundingClientRect(), b = t.getBoundingClientRect();
+      var ac = a.left + a.width / 2, bc = b.left + b.width / 2;
+      if (Math.abs(ac - bc) < 30) {
+        var x = bc - br.left;
+        d += "M" + x + " " + (a.top - br.top) + "V" + (b.bottom - br.top);
+        return;
+      }
+      var x1, x2;
+      if (ac < bc) { x1 = a.right - br.left; x2 = b.left - br.left; }
+      else { x1 = a.left - br.left; x2 = b.right - br.left; }
+      var y1 = a.top + a.height / 2 - br.top, y2 = b.top + b.height / 2 - br.top;
+      var xm = x1 + (x2 - x1) / 2;
+      d += "M" + x1 + " " + y1 + "H" + xm + "V" + y2 + "H" + x2;
+    });
+    svg.innerHTML = '<path d="' + d + '"/>';
+  }
+
+  /* ================= МОДАЛЬНОЕ ОКНО ================= */
+  var overlay = $("#overlay"), form = $("#form"), done = $("#done");
+  var current = null, lastFocus = null, sending = false, closeTimer = null;
+
+  function openModal(ti, n, trigger) {
+    clearTimeout(closeTimer);
+    current = { ti: ti, n: n };
+    lastFocus = trigger;
+    $("#mTeam").textContent = TEAMS[ti].name;
+    $("#mSlot").textContent = n;
+    form.reset();
+    clearErrors();
+    form.hidden = false;
+    done.hidden = true;
+    $(".m-sub").hidden = false;
+    overlay.hidden = false;
+    document.documentElement.classList.add("lock");
+    void overlay.offsetWidth;
+    overlay.classList.add("open");
+    setTimeout(function () { if (!overlay.hidden && !form.hidden) $("#nick").focus({ preventScroll: true }); }, 380);
+  }
+  function closeModal() {
+    overlay.classList.remove("open");
+    document.documentElement.classList.remove("lock");
+    closeTimer = setTimeout(function () {
+      overlay.hidden = true;
+      if (lastFocus && document.contains(lastFocus) && !lastFocus.disabled) lastFocus.focus({ preventScroll: true });
+    }, 400);
+  }
+
+  board.addEventListener("click", function (e) {
+    var b = e.target.closest(".slot.free");
+    if (b) openModal(+b.getAttribute("data-t"), +b.getAttribute("data-n"), b);
+  });
+  $("#closeBtn").addEventListener("click", closeModal);
+  $("#doneBtn").addEventListener("click", closeModal);
+  overlay.addEventListener("mousedown", function (e) { if (e.target === overlay) closeModal(); });
+  document.addEventListener("keydown", function (e) {
+    if (overlay.hidden) return;
+    if (e.key === "Escape") { closeModal(); return; }
+    if (e.key === "Tab") {
+      var f = Array.prototype.filter.call(overlay.querySelectorAll("button,input"), function (el) {
+        return !el.disabled && !el.hidden && el.tabIndex !== -1 && el.offsetParent !== null;
+      });
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+
+  function clearErrors() {
+    ["nick", "gid", "tg"].forEach(function (k) {
+      $("#e-" + k).textContent = "";
+      $("#" + k).classList.remove("bad");
+    });
+    $("#formErr").textContent = "";
+  }
+  function setErr(k, msg) { $("#e-" + k).textContent = msg; $("#" + (k === "tg" ? "tg" : k)).classList.add("bad"); }
+  ["nick", "gid", "tg"].forEach(function (k) {
+    $("#" + k).addEventListener("input", function () { $("#e-" + k).textContent = ""; this.classList.remove("bad"); });
+  });
+  $("#gid").addEventListener("input", function () { this.value = this.value.replace(/\D/g, ""); });
+
+  function tgEsc(v) { return String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+  function sendDirect(p) {
+    var text = "🆕 <b>Новая заявка на турнир</b>\n\n" +
+      "Команда: <b>" + tgEsc(p.team) + "</b> (№" + p.seed + ")\n" +
+      "Место: <b>" + p.slot + "</b>\n" +
+      "Ник: <b>" + tgEsc(p.nick) + "</b>\n" +
+      "Игровой ID: <code>" + tgEsc(p.gameId) + "</code>\n" +
+      "Telegram: " + tgEsc(p.telegram);
+    var body = new URLSearchParams();
+    body.set("chat_id", CONFIG.ADMIN_CHAT_ID);
+    body.set("text", text);
+    body.set("parse_mode", "HTML");
+    body.set("reply_markup", JSON.stringify({ inline_keyboard: [[{ text: "Написать игроку", url: "https://t.me/" + p.telegram.replace(/^@/, "") }]] }));
+    return fetch("https://api.telegram.org/bot" + CONFIG.BOT_TOKEN + "/sendMessage", { method: "POST", body: body })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { if (!j.ok) throw new Error(j.description || "telegram"); return {}; });
+  }
+
+  function send(payload) {
+    if (!CONFIG.SUBMIT_URL && CONFIG.BOT_TOKEN && CONFIG.ADMIN_CHAT_ID) return sendDirect(payload);
+    if (!CONFIG.SUBMIT_URL) {
+      return new Promise(function (res) { setTimeout(function () { res({ demo: true }); }, 900); });
+    }
+    var ctrl = new AbortController();
+    var to = setTimeout(function () { ctrl.abort(); }, 15000);
+    return fetch(CONFIG.SUBMIT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload),
+      signal: ctrl.signal
+    }).then(function (r) {
+      if (!r.ok) throw new Error("http " + r.status);
+      return {};
+    }).then(function (x) { clearTimeout(to); return x; }, function (e) { clearTimeout(to); throw e; });
+  }
+
+  function setSending(v) {
+    sending = v;
+    $("#submit").disabled = v;
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (sending || !current) return;
+    clearErrors();
+
+    var nick = $("#nick").value.trim();
+    var gid = $("#gid").value.replace(/\s/g, "");
+    var tg = $("#tg").value.trim().replace(/^(https?:\/\/)?(t\.me\/|telegram\.me\/)/i, "").replace(/^@+/, "");
+
+    var firstBad = null;
+    if (nick.length < 2) { setErr("nick", "Введите ник, минимум 2 символа."); firstBad = firstBad || "nick"; }
+    if (!/^\d{4,12}$/.test(gid)) { setErr("gid", "ID состоит из 4–12 цифр."); firstBad = firstBad || "gid"; }
+    if (!/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(tg)) { setErr("tg", "Укажите Telegram без пробелов: латиница, цифры и _, от 5 символов."); firstBad = firstBad || "tg"; }
+    if (firstBad) { $("#" + firstBad).focus(); return; }
+
+    var ti = current.ti, n = current.n;
+    var payload = {
+      team: TEAMS[ti].name,
+      seed: ti + 1,
+      slot: n,
+      nick: nick,
+      gameId: gid,
+      telegram: "@" + tg,
+      website: $("#hp").value
+    };
+
+    setSending(true);
+    var job = $("#hp").value ? Promise.resolve({}) : send(payload);
+    job.then(function (res) {
+      sent.add(ti + ":" + n);
+      saveSent();
+      render();
+      $("#doneTxt").textContent = "Заявка на место " + n + " в команде " + TEAMS[ti].name + " отправлена администратору. Он напишет вам в Telegram: @" + tg + ".";
+      $("#demoNote").hidden = !(res && res.demo);
+      form.hidden = true;
+      $(".m-sub").hidden = true;
+      done.hidden = false;
+      $("#doneBtn").focus({ preventScroll: true });
+    }).catch(function () {
+      $("#formErr").textContent = "Не удалось отправить заявку. Проверьте интернет и попробуйте ещё раз.";
+    }).then(function () { setSending(false); });
+  });
+
+  /* ================= ЗАПУСК ================= */
+  render();
+  if (window.ResizeObserver) new ResizeObserver(drawLines).observe(board);
+  window.addEventListener("resize", drawLines);
+  window.addEventListener("load", drawLines);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawLines);
+
+  // Счётчик призового фонда
+  (function () {
+    var el = $("#prizeNum");
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var target = 42000, t0 = performance.now(), dur = 1400;
+    function step(t) {
+      var p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * e).toLocaleString("ru-RU");
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  })();
+})();
+</script>
+</body>
+</html>
